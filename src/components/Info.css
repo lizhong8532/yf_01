@@ -1,0 +1,15 @@
+.lz-row {
+  margin-bottom: 2px;
+}
+.ant-row > div {
+  background: transparent;
+  border: 0;
+}
+.gutter-box {
+  background: #ddd;
+  padding: 10px;
+}
+.lz-value {
+  background: #f5f5f5;
+  padding: 10px;
+}

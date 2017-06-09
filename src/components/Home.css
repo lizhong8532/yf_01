@@ -1,0 +1,19 @@
+.ant-layout-header {
+  color: #fff;
+}
+.ant-layout-header .logo {
+  width: 120px;
+  height: 50px;
+  border-radius: 6px;
+  margin: 10px 24px 6px 0;
+  float: left;
+}
+.ant-layout-header .logo img {
+  height: 100%;
+}
+.ant-layout-sider-collapsed .nav-text {
+  display: none;
+}
+.ant-layout-sider-collapsed .ant-menu-submenu-vertical > .ant-menu-submenu-title:after {
+  display: none;
+}

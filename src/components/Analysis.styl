@@ -1,0 +1,28 @@
+.lz-full 
+  width 100% !important
+  height 100% !important
+  position fixed !important
+  z-index 999 !important
+  background white
+  top 0
+  left 0
+
+.analysis
+  display flex
+  flex-wrap wrap
+  > div
+    width 50%
+    padding 1em
+    &:hover
+      background #F5F5F5
+
+    &:hover
+      .lz-tool 
+        display block
+
+    .lz-tool
+      position absolute
+      z-index 1
+      top 10px
+      right 10px
+      display none

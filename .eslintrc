@@ -1,0 +1,9 @@
+{
+  "parser": "esprima",
+  "globals": {
+    "BMap": true
+  },
+  "rules": {
+    "semi": "error"
+  }
+}
