@@ -8,7 +8,7 @@ class Info extends Component {
   createGrid() {
     return this.props.grid.map((item, i) => {
       if (item.length >= 2) {
-        return <Row gutter={16} key={i} className="lz-row">
+        return <Row gutter={10} key={i} className="lz-row">
           <Col className="lz-label" span={d / item.length / 2}>
             <div className="gutter-box">{ item[0].label }</div>
           </Col>
@@ -23,7 +23,7 @@ class Info extends Component {
           </Col>
         </Row>
       } else {
-        return <Row gutter={16} key={i} className="lz-row">
+        return <Row gutter={10} key={i} className="lz-row">
           <Col className="lz-label" span={d / 4}>
             <div className="gutter-box">{ item[0].label }</div>
           </Col>

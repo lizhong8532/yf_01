@@ -2,15 +2,21 @@
   "name": "yf_01",
   "version": "0.1.0",
   "private": true,
+  "homepage": "/",
   "proxy": {
-    "/api/upload": { 
-      "target": "http://106.15.44.21:3000" 
+    "/api/upload": {
+      "target": "http://106.15.44.21:3000"
     },
-    "/api": { 
-      "target": "http://localhost:3002" 
+    "/api": {
+      "target1": "http://192.168.1.242:3002",
+      "target": "http://localhost:3002",
+      "target2": "http://192.168.1.242:8080"
+    },
+    "/xmdb": {
+      "target": "http://192.168.1.242:8080"
     },
     "/fileslist": {
-      "target": "http://106.15.44.21:3000"       
+      "target": "http://106.15.44.21:3000"
     }
   },
   "dependencies": {
@@ -19,8 +25,10 @@
     "pubsub-js": "^1.5.7",
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
+    "react-image-lightbox": "^4.0.0",
     "react-router": "^4.1.1",
-    "react-router-dom": "^4.1.1"
+    "react-router-dom": "^4.1.1",
+    "scroll-into-view": "^1.8.0"
   },
   "devDependencies": {
     "express": "^4.15.3",

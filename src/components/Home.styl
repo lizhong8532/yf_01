@@ -1,17 +1,29 @@
+@import '../styles/red'
 
+baseColor = #5d85f5
 .ant-layout-header
   color white
+  display flex
+  align-items center
+  justify-content center
+  background url(/images/topbg.png) !important
+  position relative
 
-  .logo 
-    width: 120px;
-    height: 50px;
-    border-radius: 6px;
-    margin: 10px 24px 06px 0;
-    float: left;
+  .lz-logo
+    height 80%
 
-    img
-      height 100%
+  .lz-top-left, .lz-top-right
+    height 100%
+    position absolute
+    top 0
+    background-size 100%
+    background-repeat no-repeat
 
+  .lz-top-left
+    left 0
+
+  .lz-top-right
+    right 0
 
 .ant-layout-sider-collapsed
   .nav-text
@@ -19,3 +31,70 @@
 
   .ant-menu-submenu-vertical > .ant-menu-submenu-title:after
     display none
+
+.lz-sider
+  .ant-menu-vertical 
+
+    .ant-menu-item
+      height = 52px
+      height height !important
+      line-height height !important
+
+    .ant-menu-item-selected
+      background-color baseColor !important
+      
+      a
+        color white
+        
+.lz-map-sider
+  background-color transparent !important
+
+.ant-layout-sider-trigger 
+  background baseColor !important
+
+height=33px
+.light-btn-group
+  display inline-block
+  height height
+  line-height height
+
+  .light-btn
+    border 1px dashed #CCC
+    display inline-block
+
+    height height
+    position relative
+    border-radius: 5px
+    text-indent: 2em
+    padding 0 1em
+    margin-left 0.2 em
+    cursor pointer
+
+    &[type=primary],
+    &:hover
+      border: 1px solid baseColor
+      background-color #F5F5F5
+      font-weight bold
+      img 
+        height 90%
+
+    img
+      position absolute
+      height 80%
+      left 1em
+      top 0
+      bottom 0
+      margin auto
+
+.BMap_noprint > div > div {
+  font-size: 2em !important;
+}
+
+.BMap_stdMpType4 .BMap_stdMpZoom {
+  transform: scale(2, 2) !important;
+}
+
+.BMap_stdMpType4 {
+  bottom: 52px !important;
+  right: 30px !important;
+}

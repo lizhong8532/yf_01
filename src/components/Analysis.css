@@ -18,13 +18,10 @@
 .analysis > div:hover {
   background: #f5f5f5;
 }
-.analysis > div:hover .lz-tool {
-  display: block;
-}
 .analysis > div .lz-tool {
   position: absolute;
   z-index: 1;
   top: 10px;
   right: 10px;
-  display: none;
+  display: block;
 }

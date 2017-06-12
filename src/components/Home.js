@@ -43,15 +43,24 @@ class Home extends Component {
   }
 
   render() {
+    let headerStyle = {
+      height: conf.HEADER_HEIGHT,
+      lineHeight: conf.HEADER_HEIGHT
+    };
+
+    // 
     return (
       <Layout>
-        <Header>
-            上海元方 - Rofine
+        <Header style={ headerStyle }>
+          <img className="lz-top-left" alt="left" src="/images/topleft.png" />
+          <img className="lz-top-right" alt="right" src="/images/topright.png" />
+          <img className="lz-logo" alt="logo" src="/images/toplogo.png" />
         </Header>
         <Layout className="lz-content" style={{ height: window.innerHeight - conf.HEADER_HEIGHT }}>
           <Sider
-            style={{ background: '#ececec' }}
+            className="lz-sider"
             collapsible
+            style={{ background: '#ececec' }}
             collapsed={this.state.collapsed}
             onCollapse={(collapsed) => this.onCollapse(collapsed)}
           >

@@ -31,3 +31,11 @@
   width: 100%;
   padding: 10px;
 }
+.image-gallery-thumbnail-label {
+  background-color: #000;
+  color: #fff;
+  background-color: #381e1e;
+  font-size: 1em;
+  height: 1em;
+  text-shadow: 0 0 2px #f00;
+}

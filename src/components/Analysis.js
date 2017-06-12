@@ -12,6 +12,7 @@ class Analysis extends Component {
     super(props);
     this.state = {
       loading: false,
+      toggle: '',
       data: []
     };
   }
@@ -45,8 +46,17 @@ class Analysis extends Component {
         option.title = { text: item.title };
         option.series = [];
 
+        option.grid = {
+          top: '20%',
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        };
+
         option.legend = {
-          left: 'center',
+          left: 'left',
+          top: '40',
           data: item.header.map(item => item.title )
         };
 
@@ -112,27 +122,26 @@ class Analysis extends Component {
   }
 
   full(i) {
-    if (this.refs.root.childNodes[i].className.indexOf('lz-full') >= 0) {
-      this.refs.root.childNodes[i].className = '';
-    } else {
-      this.refs.root.childNodes[i].className = 'lz-full';
-    }
-
-    cache[i].resize();
+    this.setState({ toggle: i === this.state.toggle ? '' : i });
+  
+    setTimeout(() => {
+      cache[i].resize();      
+    }, 200);
   }
 
   createChart() {
     return this.state.data.map((item, i) =>
-      <div key={i} style={{ height: this.refs.root.clientWidth / 2 * 0.7,  position: 'relative'}}>
+      <div className={this.state.toggle === i ? 'lz-full' : ''} key={i} style={{ height: this.refs.root.clientWidth / 2 * 0.7,  position: 'relative'}}>
         <div ref={`map${i}`} style={{ width: '100%', height: '100%' }} />
         <span className="lz-tool">
-          <Button onClick={() => this.full(i)}>全屏</Button>
+          <Button size="large" onClick={() => this.full(i) }>全屏</Button>
         </span>
       </div>
     );
   }
 
   componentDidMount() {
+    cache = [];
     this.getData();
   }
 

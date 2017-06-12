@@ -16,7 +16,13 @@ import {
 import 'antd/dist/antd.css';
 import './index.css';
 
-axios.defaults.headers.common['Authorization'] = 'test';
+window.localStorage.setItem('CONF_ACCESS_TOKEN', 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImFjY291bnRObyI6ImFkbWluIiwibmFtZSI6Iuezu-e7n-euoeeQhuWRmCIsInRlbmFudElkIjoiZWdmYmFuayJ9.URWHQbPq7DebgANGTwr5Jf-tWEWVDjpe6DPg3klD6Nc');
+
+if (!window.localStorage.getItem('CONF_ACCESS_TOKEN')) {
+  window.location.href = '/xmdb';
+}
+
+axios.defaults.headers.common['access-token'] = 'Bearer ' + window.localStorage.getItem('CONF_ACCESS_TOKEN');
 // axios.interceptors.request.use((config) => {
 //   if (window.location.port === '3000') {
 //     config.url += '.json';

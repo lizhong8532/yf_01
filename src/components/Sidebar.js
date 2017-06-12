@@ -38,8 +38,10 @@ class Sidebar extends Component {
     if (pathName.indexOf('/home/project/list') === 0) {
       if (pathName.indexOf('attention') >= 0) {
         pathName = '/home/project/list/map/attention';
+      } else if (pathName.indexOf('batch') >= 0) {
+        pathName = '/home/project/list/map/batch';
       } else {
-        pathName = '/home/project/list/map/all';
+        pathName = '/home/project/list/map/all';        
       }
     }
 

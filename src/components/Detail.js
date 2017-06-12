@@ -6,19 +6,28 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 
-import { Tabs, Table, Spin } from 'antd';
+import { Tabs, Table, Spin, Button } from 'antd';
 import Info from './Info';
 import Images from './Images';
 import conf from '../config';
-
+import PubSub from 'pubsub-js';
+import e from '../event';
 const TabPane = Tabs.TabPane;
 let isInitInvest = false;
 let isInitGeo = false;
+let _this = null;
+
+PubSub.subscribe(e.OPEN_DID_INFO, (msg, id) => {
+  document.querySelector('div[role="tab"]').click();  
+  _this.getData(id);
+});
+
 
 class Detail extends Component {
   constructor(props) {
     super(props);
-    this.state = {
+    _this = this;
+    _this.state = {
       loading: false,
       info: [],
       progress: [],
@@ -31,15 +40,18 @@ class Detail extends Component {
   }
 
   componentDidMount() {
-    this.getData();
+    this.getData(this.props.id);
   }
 
-  getData() {
-    if (!this.state.loading) {
+  getData(id) {
+    if (id && !this.state.loading) {
+      isInitInvest = false;
+      isInitGeo = false;
       this.setState({loading: true});
-      axios.get(`/api/getProject/${this.props.match.params.id}`)
-        .then((res) => {
 
+      // axios.get(`/api/getProject/${this.props.match.params.id}`)
+      axios.get(`/api/getProject/${id}`)
+        .then((res) => {
           res.data.status.header.filter(item => item.key === 'status').forEach((item) => {
             item.render = (text) => {
               return text ? <span style={{ color: 'green' }}>已完成</span> : <span>未完成</span>;
@@ -88,22 +100,36 @@ class Detail extends Component {
   }
 
   initGeo() {
-    let mp = new BMap.Map(this.refs.geo);
+    let div = document.createElement('div');
+    div.style.height = (window.innerHeight - 100) + 'px';
+    this.refs.geo.innerHTML = '';
+    this.refs.geo.appendChild(div);
+
+    let mp = new BMap.Map(div);
     let icon = new BMap.Icon(this.getIcon(this.state.geo.status), new BMap.Size(conf.MAP_ICON_W, conf.MAP_ICON_H));
     let marker = new BMap.Marker(new BMap.Point(this.state.geo.long, this.state.geo.lat), { icon: icon });
+    let label = new BMap.Label(this.state.geo.name, {offset:new BMap.Size(20,-10)});
 
+    label.setStyle(conf.MAP_LABEL_STYLE);
+    marker.setLabel(label);
+    
     mp.addControl(new BMap.MapTypeControl({mapTypes: [BMAP_HYBRID_MAP, BMAP_NORMAL_MAP]}));
     let stCtrl = new BMap.PanoramaControl(); //构造全景控件
-	  stCtrl.setOffset(new BMap.Size(10, 40));
-	  mp.addControl(stCtrl);//添加全景控件
-
+    stCtrl.setOffset(new BMap.Size(10, 55));
+    mp.addControl(stCtrl);//添加全景控件
+    mp.addControl(new BMap.NavigationControl());
     mp.centerAndZoom(new BMap.Point(this.state.geo.long, this.state.geo.lat), 11);
     mp.enableScrollWheelZoom();
     mp.addOverlay(marker);
-    marker.setLabel(new BMap.Label(this.state.geo.name, {offset:new BMap.Size(20,-10)}));
+
   }
 
   initInvest() {
+    let div = document.createElement('div');
+    div.style.height = (window.innerHeight - 150) + 'px';
+    this.refs.invest.innerHTML = '';    
+    this.refs.invest.appendChild(div); 
+    
     let option = {
       title: { text: '项目月度投资' },
       color: ['#006633', '#006699', '#003300', '#330066'],
@@ -160,7 +186,7 @@ class Detail extends Component {
       });
     });
 
-    let myChart = echarts.init(this.refs.invest);
+    let myChart = echarts.init(div);
     myChart.setOption(option);
   }
 
@@ -181,16 +207,17 @@ class Detail extends Component {
   }
 
   render() {
+    const operations = <Button icon="close" onClick={this.props.close}>返回</Button>;
     return (
       <Spin spinning={this.state.loading} tip="Loading...">
-        <Tabs defaultActiveKey="info" onChange={(key) => this.callback(key)}>
+        <Tabs defaultActiveKey="info" onChange={(key) => this.callback(key)} tabBarExtraContent={operations}>
           <TabPane tab="基础信息" key="info"><Info grid={ this.state.info } /></TabPane>
           <TabPane tab="工作进度" key="progress"><Images data={ this.state.progress } /></TabPane>
-          <TabPane tab="项目月度投资" key="invest"><div ref="invest" style={{ height: window.innerHeight - 150 }}></div></TabPane>
+          <TabPane tab="项目月度投资" key="invest"><div ref="invest"></div></TabPane>
           <TabPane tab="项目节点状态" key="status"><Table  rowKey="id" dataSource={this.state.status.rows} columns={this.state.status.header} /></TabPane>
           <TabPane tab="项目问题" key="issue"><Table rowKey="id" dataSource={this.state.issue.rows} columns={this.state.issue.header} /></TabPane>
           <TabPane tab="项目督查" key="inspect"><Table rowKey="id" dataSource={this.state.inspect.rows} columns={this.state.inspect.header} /></TabPane>
-          <TabPane tab="项目地理位置" key="geo"><div ref="geo" style={{ height: window.innerHeight - 100 }}></div></TabPane>
+          <TabPane tab="项目地理位置" key="geo"><div ref="geo"></div></TabPane>
         </Tabs>
       </Spin>
     );

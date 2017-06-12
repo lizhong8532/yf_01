@@ -8,6 +8,7 @@ import {
   Link
 } from 'react-router-dom';
 import conf from '../config';
+import scrollIntoView from 'scroll-into-view';
 
 const { Sider, Content } = Layout;
 // const ButtonGroup = Button.Group;
@@ -24,6 +25,8 @@ class Map extends Component {
         rows: []
       }
     };
+
+    markersCache = {};
   }
 
   initMap() {
@@ -32,8 +35,9 @@ class Map extends Component {
     this.mp.centerAndZoom(this.getPoint(centerPoint.long, centerPoint.lat), conf.DEFAULT_ZOOM_LEVEL);
     this.mp.enableScrollWheelZoom();
     this.mp.addControl(new BMap.MapTypeControl({mapTypes: [BMAP_NORMAL_MAP, BMAP_HYBRID_MAP]}));
+    this.mp.addControl(new BMap.NavigationControl());
     let stCtrl = new BMap.PanoramaControl(); //构造全景控件
-	  stCtrl.setOffset(new BMap.Size(10, 40));
+	  stCtrl.setOffset(new BMap.Size(10, 55));
 	  this.mp.addControl(stCtrl);//添加全景控件
     
   }
@@ -70,10 +74,12 @@ class Map extends Component {
         let maxY = 0;
 
         this.props.projects.rows.forEach((item) => {
-          minX = minX === 0 ? item.long : Math.min(minX, item.long);
-          minY = minY === 0 ? item.lat : Math.min(minY, item.lat);
-          maxX = Math.max(maxX, item.long);
-          maxY = Math.max(maxY, item.lat);
+          if (item.long && item.lat) {
+            minX = minX === 0 ? item.long : Math.min(minX, item.long);
+            minY = minY === 0 ? item.lat : Math.min(minY, item.lat);
+            maxX = Math.max(maxX, item.long);
+            maxY = Math.max(maxY, item.lat);
+          }
         });
 
         point.long = minX + ((maxX - minX) / 2);
@@ -93,15 +99,28 @@ class Map extends Component {
 
   setMarkers(arr) {
     if (arr instanceof Array) {
-      arr.forEach((item) => {
+      arr.filter((item) => item.long && item.lat).forEach((item, i) => {
         let icon = new BMap.Icon(this.getIcon(item.status), new BMap.Size(conf.MAP_ICON_W, conf.MAP_ICON_H));
         let marker = new BMap.Marker(this.getPoint(item.long, item.lat), { icon: icon });
         this.mp.addOverlay(marker);
         let label = this.getLabel(item.name, {offset:new BMap.Size(20,-10)});
+        label.setStyle(conf.MAP_LABEL_STYLE);
         marker.setLabel(label);
         markersCache[item.id] = marker;
+
+        label.addEventListener('click', ()=>{
+          this.scrollToItem(item, i);
+        });
       });
     }
+  }
+
+  scrollToItem(item, i) {
+    document.querySelectorAll('.ant-card').forEach((element, index) => {
+      if (i === index) {
+        scrollIntoView(element);
+      }
+    });
   }
 
   cardClick(item) {
@@ -112,19 +131,18 @@ class Map extends Component {
     if (this.props.projects.rows instanceof Array) {
       return this.props.projects.rows.map((item) => (
         <Card
-          onClick={ () => this.cardClick(item) }
           title={ item.name } key={ item.id }
           extra={<Link to={`/home/project/detail/${item.id}`}><Icon type="link" /></Link>}
-          style={{ marginTop: '10px', cursor: 'pointer' }}
+          style={{ marginBottom: '10px', cursor: 'pointer' }}
         >
           <p>年份: { item.year }</p>
-          <p>状态: { this.props.status[item.status].text }灯 <img alt={ item.status } height="20" src={this.getIcon(item.status)} /></p>
-          <p>
-              <a rel="noopener noreferrer" href={`/home/project/detail/${item.id}`} target="_blank"><Button size="small" icon="link">查看详情</Button></a>
-          </p>
-          <p>
-              <Button size="small" icon="compass">定位</Button>            
-          </p>
+          <p>状态: { this.props.status[item.status].text }灯</p>
+          <div style={{ marginTop: 5 }}>
+            <Button size="large" onClick={() => this.props.detail(item.id)}>详情</Button>
+          </div>
+          <div style={{ marginTop: 5 }}>
+            <Button size="large" onClick={() => this.cardClick(item)}>定位</Button>
+          </div>
         </Card>
       ));
     } else {
@@ -147,11 +165,11 @@ class Map extends Component {
 
   render() {
     return (
-      <Layout style={{ height: window.innerHeight - conf.HEADER_HEIGHT - 75, overflow: 'hidden' }}>
+      <Layout style={{ height: window.innerHeight - conf.HEADER_HEIGHT - 80, overflow: 'hidden' }}>
         <Content style={{ height: "100%" }}>
-          <div ref="map" style={{ height: "100%" }}></div>
+          <div ref="map" style={{ height: "100%", width: '100%' }}></div>
         </Content>
-        <Sider style={{ height: '100%', overflow: 'auto' }}>
+        <Sider className="lz-map-sider" style={{ height: '100%', overflow: 'auto' }}>
           <div style={{ padding: '10px' }}>
             { this.listItems() }
           </div>

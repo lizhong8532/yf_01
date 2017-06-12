@@ -20,6 +20,7 @@ let createProject = (n = 10) => {
     o.year = 2011 + Math.round(Math.random() * 6);
     o.isAttention = Math.random() >= 0.3;
     o.status = Math.ceil(Math.random() * 5) - 1;
+    o.batch = '第' + Math.ceil(Math.random() * 5) + '批';
     arr.push(o);
   }
 

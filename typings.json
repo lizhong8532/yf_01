@@ -1,0 +1,5 @@
+{
+  "globalDependencies": {
+    "scroll-into-view": "registry:dt/scroll-into-view#1.6.0+20161006171625"
+  }
+}

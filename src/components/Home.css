@@ -1,19 +1,91 @@
 .ant-layout-header {
   color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: url("/images/topbg.png") !important;
+  position: relative;
 }
-.ant-layout-header .logo {
-  width: 120px;
-  height: 50px;
-  border-radius: 6px;
-  margin: 10px 24px 6px 0;
-  float: left;
+.ant-layout-header .lz-logo {
+  height: 80%;
 }
-.ant-layout-header .logo img {
+.ant-layout-header .lz-top-left,
+.ant-layout-header .lz-top-right {
   height: 100%;
+  position: absolute;
+  top: 0;
+  background-size: 100%;
+  background-repeat: no-repeat;
+}
+.ant-layout-header .lz-top-left {
+  left: 0;
+}
+.ant-layout-header .lz-top-right {
+  right: 0;
 }
 .ant-layout-sider-collapsed .nav-text {
   display: none;
 }
 .ant-layout-sider-collapsed .ant-menu-submenu-vertical > .ant-menu-submenu-title:after {
   display: none;
+}
+.lz-sider .ant-menu-vertical .ant-menu-item {
+  height: 52px !important;
+  line-height: 52px !important;
+}
+.lz-sider .ant-menu-vertical .ant-menu-item-selected {
+  background-color: #5d85f5 !important;
+}
+.lz-sider .ant-menu-vertical .ant-menu-item-selected a {
+  color: #fff;
+}
+.lz-map-sider {
+  background-color: transparent !important;
+}
+.ant-layout-sider-trigger {
+  background: #5d85f5 !important;
+}
+.light-btn-group {
+  display: inline-block;
+  height: 33px;
+  line-height: 33px;
+}
+.light-btn-group .light-btn {
+  border: 1px dashed #ccc;
+  display: inline-block;
+  height: 33px;
+  position: relative;
+  border-radius: 5px;
+  text-indent: 2em;
+  padding: 0 1em;
+  margin-left: 0.2em;
+  cursor: pointer;
+}
+.light-btn-group .light-btn[type=primary],
+.light-btn-group .light-btn:hover {
+  border: 1px solid #5d85f5;
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+.light-btn-group .light-btn[type=primary] img,
+.light-btn-group .light-btn:hover img {
+  height: 90%;
+}
+.light-btn-group .light-btn img {
+  position: absolute;
+  height: 80%;
+  left: 1em;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+}
+.BMap_noprint > div > div {
+  font-size: 2em !important;
+}
+.BMap_stdMpType4 .BMap_stdMpZoom {
+  transform: scale(2, 2) !important;
+}
+.BMap_stdMpType4 {
+  bottom: 52px !important;
+  right: 30px !important;
 }
