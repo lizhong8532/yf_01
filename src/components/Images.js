@@ -29,10 +29,6 @@ class Images extends Component {
   }  
  
   render() {
-    // let images = this.props.data.map((item) =>  {
-    //   return {original: item.url, thumbnail: item.url, originalTitle: item.title, description: item.title}
-    // });
-
     let images = this.props.data.map((item) => item.url);
     let titles = this.props.data.map((item) => item.title);
 

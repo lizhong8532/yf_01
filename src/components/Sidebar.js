@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PubSub from 'pubsub-js';
 import e from '../event';
+import conf from '../config';
 
 import {
   Link
@@ -9,10 +10,13 @@ import {
 import { Menu, Icon } from 'antd';
 
 class Sidebar extends Component {
-
-  state = {
-    keys: []
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      keys: [],
+      list: []
+    };
+  }
 
   handleClick(item) {
     PubSub.publish(e.SIDEBAR_CLICK, item);
@@ -20,11 +24,11 @@ class Sidebar extends Component {
 
   listItems() {
     return this.props.items.map((item) =>
-      <Menu.Item key={item.url}>
+      <Menu.Item key={item.id}>
         <Link to={item.url} onClick={ () => this.handleClick(item) }>
           <span>
             <Icon type={item.icon} />
-            <span className="nav-text">{item.label}</span>
+            <span className="nav-text" style={{fontSize: '1.2em'}}>{item.label}</span>
           </span>
         </Link>
       </Menu.Item>
@@ -33,29 +37,30 @@ class Sidebar extends Component {
 
   render() {
     let keys = [];
-    let pathName = window.location.pathname;
 
-    if (pathName.indexOf('/home/project/list') === 0) {
-      if (pathName.indexOf('attention') >= 0) {
-        pathName = '/home/project/list/map/attention';
-      } else if (pathName.indexOf('batch') >= 0) {
-        pathName = '/home/project/list/map/batch';
-      } else {
-        pathName = '/home/project/list/map/all';        
+    if (this.props.items.length) {
+      let pathName = window.location.pathname;
+
+      this.props.items.forEach((item) => {
+        if (item.url === decodeURIComponent(pathName)) {
+          keys.push(item.id);
+        }
+      });
+
+      if (!keys.length) {
+        keys = conf.SIDEBAR.filter((item) => item.default).map((item) => item.id);
       }
+
+      return (
+        <Menu defaultSelectedKeys={[keys[0]]} style={{ background: '#ececec' }} className="Sidebar-Menu">
+          { this.listItems() }
+        </Menu>
+      );
+    } else {
+      return (
+        <div></div>
+      );
     }
-
-    this.props.items.forEach((item) => {
-      if (item.url === pathName) {
-        keys.push(item.url);
-      }
-    });
-
-    return (
-      <Menu defaultSelectedKeys={keys} style={{ background: '#ececec' }} className="Sidebar-Menu">
-        { this.listItems() }
-      </Menu>
-    );
   }
 }
 

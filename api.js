@@ -296,7 +296,7 @@ let getProjectById = (req, res) => {
       department: '湿地局',
       planEndDate: '2017-' + (i + 1) + '-' + Math.ceil(Math.random() * 25),
       endDate: '2017-' + (i + 1) + '-' + Math.ceil(Math.random() * 25),
-      status: Math.random() >= 0.5,
+      status: Math.ceil(Math.random() * 5) - 1,
       inspect: Math.random() >= 0.5
     });
   }

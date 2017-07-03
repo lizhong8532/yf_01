@@ -6,16 +6,21 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 
-import { Tabs, Table, Spin, Button } from 'antd';
+import { Tabs, Table, Spin, Button, Icon } from 'antd';
 import Info from './Info';
 import Images from './Images';
 import conf from '../config';
 import PubSub from 'pubsub-js';
 import e from '../event';
+import common from './Common'
+
 const TabPane = Tabs.TabPane;
 let isInitInvest = false;
 let isInitGeo = false;
 let _this = null;
+let investElement = null;
+let geoElement = null;
+let map = null;
 
 PubSub.subscribe(e.OPEN_DID_INFO, (msg, id) => {
   document.querySelector('div[role="tab"]').click();  
@@ -28,6 +33,7 @@ class Detail extends Component {
     super(props);
     _this = this;
     _this.state = {
+      statusMapping: conf.LIGHT_MAPPING,
       loading: false,
       info: [],
       progress: [],
@@ -40,7 +46,17 @@ class Detail extends Component {
   }
 
   componentDidMount() {
-    this.getData(this.props.id);
+    let id = '';
+
+    if (this.props.id) {
+      id = this.props.id;
+    } else if (this.props.match &&  this.props.match.params && this.props.match.params.id) {
+      id = this.props.match.params.id;
+    }
+
+    if (id) {
+      this.getData(id);
+    }
   }
 
   getData(id) {
@@ -68,6 +84,18 @@ class Detail extends Component {
           res.data.status.header.forEach(item => item.dataIndex = item.key);
           res.data.issue.header.forEach(item => item.dataIndex = item.key);
 
+          res.data.status.header.filter(item => item.key === 'status').forEach((item) => {
+            item.render = (text) => {
+              return common.lightIcon(text);
+            };
+          });
+
+          res.data.status.header.filter(item => item.key === 'flag').forEach((item) => {
+            item.render = (text) => {
+              return text ? <Icon type="flag" style={{ color: 'red' }} /> : <span></span>;
+            };
+          });
+
           this.setState({
             loading: false,
             info: res.data.info,
@@ -86,27 +114,15 @@ class Detail extends Component {
     }
   }
 
-  getIcon(status) {
-    switch (status) {
-      case 1:
-      case 2:
-      case 3:
-      case 4:
-      case 5:
-        return `/images/marker_${status}.png`;
-      default:
-        return '/images/marker_1.png';
-    }
-  }
-
   initGeo() {
     let div = document.createElement('div');
-    div.style.height = (window.innerHeight - 100) + 'px';
+    div.style.height = (window.innerHeight - 60) + 'px';
     this.refs.geo.innerHTML = '';
     this.refs.geo.appendChild(div);
+    geoElement = div;
 
     let mp = new BMap.Map(div);
-    let icon = new BMap.Icon(this.getIcon(this.state.geo.status), new BMap.Size(conf.MAP_ICON_W, conf.MAP_ICON_H));
+    let icon = new BMap.Icon(common.getIcon(this.state.geo.status), new BMap.Size(conf.MAP_ICON_W, conf.MAP_ICON_H));
     let marker = new BMap.Marker(new BMap.Point(this.state.geo.long, this.state.geo.lat), { icon: icon });
     let label = new BMap.Label(this.state.geo.name, {offset:new BMap.Size(20,-10)});
 
@@ -121,15 +137,16 @@ class Detail extends Component {
     mp.centerAndZoom(new BMap.Point(this.state.geo.long, this.state.geo.lat), 11);
     mp.enableScrollWheelZoom();
     mp.addOverlay(marker);
-
+    map = mp;
   }
 
   initInvest() {
     let div = document.createElement('div');
-    div.style.height = (window.innerHeight - 150) + 'px';
+    div.style.height =  (window.innerHeight > 460 ? (window.innerHeight - 60) : 400) + 'px';
     this.refs.invest.innerHTML = '';    
     this.refs.invest.appendChild(div); 
-    
+    investElement = div;
+
     let option = {
       title: { text: '项目月度投资' },
       color: ['#006633', '#006699', '#003300', '#330066'],
@@ -188,6 +205,16 @@ class Detail extends Component {
 
     let myChart = echarts.init(div);
     myChart.setOption(option);
+
+    window.onresize = () => {
+      investElement.style.height = (window.innerHeight > 260 ? (window.innerHeight - 60) : 200) + 'px';
+      myChart.resize();
+      
+      if (geoElement && map) {
+        geoElement.style.height = (window.innerHeight - 60) + 'px';
+        // map.resize();
+      }
+    };
   }
 
   callback(key) {
@@ -207,7 +234,8 @@ class Detail extends Component {
   }
 
   render() {
-    const operations = <Button icon="close" onClick={this.props.close}>返回</Button>;
+    const operations = this.props.id ? <Button icon="close" onClick={this.props.close}>返回</Button> : null;
+
     return (
       <Spin spinning={this.state.loading} tip="Loading...">
         <Tabs defaultActiveKey="info" onChange={(key) => this.callback(key)} tabBarExtraContent={operations}>

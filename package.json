@@ -9,8 +9,9 @@
     },
     "/api": {
       "target1": "http://192.168.1.242:3002",
-      "target": "http://localhost:3002",
-      "target2": "http://192.168.1.242:8080"
+      "target4": "http://localhost:3002",
+      "target2": "http://192.168.1.242:8080",
+      "target": "http://116.62.113.227:8080"
     },
     "/xmdb": {
       "target": "http://192.168.1.242:8080"
@@ -40,7 +41,7 @@
     "watch-css": "npm run build-css && stylus src/components/ -o src/components/ -w",
     "start-js": "react-scripts start",
     "start": "npm-run-all -p watch-css start-js",
-    "build": "npm run build-css && react-scripts build",
+    "build": "npm run build-css && react-scripts build && rm -rf build.zip && zip -r build.zip build/**",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   }

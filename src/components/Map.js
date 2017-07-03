@@ -9,11 +9,13 @@ import {
 } from 'react-router-dom';
 import conf from '../config';
 import scrollIntoView from 'scroll-into-view';
+import common from './Common';
 
 const { Sider, Content } = Layout;
 // const ButtonGroup = Button.Group;
 
 let markersCache = {};
+let labelsCache = {};
 
 class Map extends Component {
   constructor(props) {
@@ -27,6 +29,7 @@ class Map extends Component {
     };
 
     markersCache = {};
+    labelsCache = {};
   }
 
   initMap() {
@@ -40,19 +43,6 @@ class Map extends Component {
 	  stCtrl.setOffset(new BMap.Size(10, 55));
 	  this.mp.addControl(stCtrl);//添加全景控件
     
-  }
-
-  getIcon(status) {
-    switch (status) {
-      case 1:
-      case 2:
-      case 3:
-      case 4:
-      case 5:
-        return `/images/marker_${status}.png`;
-      default:
-        return '/images/marker_1.png';
-    }
   }
 
   getPoint(long, lat) {
@@ -100,19 +90,43 @@ class Map extends Component {
   setMarkers(arr) {
     if (arr instanceof Array) {
       arr.filter((item) => item.long && item.lat).forEach((item, i) => {
-        let icon = new BMap.Icon(this.getIcon(item.status), new BMap.Size(conf.MAP_ICON_W, conf.MAP_ICON_H));
+        let icon = new BMap.Icon(common.getIcon(item.status), new BMap.Size(conf.MAP_ICON_W, conf.MAP_ICON_H));
         let marker = new BMap.Marker(this.getPoint(item.long, item.lat), { icon: icon });
         this.mp.addOverlay(marker);
         let label = this.getLabel(item.name, {offset:new BMap.Size(20,-10)});
         label.setStyle(conf.MAP_LABEL_STYLE);
-        marker.setLabel(label);
+        // marker.setLabel(label);
         markersCache[item.id] = marker;
-
-        label.addEventListener('click', ()=>{
+        labelsCache[item.id] = label;
+        
+        label.addEventListener('click', () => {
           this.scrollToItem(item, i);
+        });
+
+        label.addEventListener('dblclick', () => {
+          this.props.detail(item.id);
+        });
+
+        marker.addEventListener('click', () => {
+          this.showLabel(item);
+          this.scrollToItem(item, i);
+        });
+
+        marker.addEventListener('dblclick', () => {
+          this.props.detail(item.id);
         });
       });
     }
+  }
+
+  showLabel(item) {
+    Object.keys(markersCache).forEach((key) => {
+      if (markersCache[key].getLabel()) {
+        this.mp.removeOverlay(markersCache[key].getLabel());
+      }
+    });
+
+    markersCache[item.id].setLabel(labelsCache[item.id]);
   }
 
   scrollToItem(item, i) {
@@ -124,6 +138,7 @@ class Map extends Component {
   }
 
   cardClick(item) {
+    this.showLabel(item);
     this.mp.panTo(markersCache[item.id].getPosition());
   }
 
@@ -136,7 +151,7 @@ class Map extends Component {
           style={{ marginBottom: '10px', cursor: 'pointer' }}
         >
           <p>年份: { item.year }</p>
-          <p>状态: { this.props.status[item.status].text }灯</p>
+          <p>状态: { conf.LIGHT_MAPPING[item.status].text }灯</p>
           <div style={{ marginTop: 5 }}>
             <Button size="large" onClick={() => this.props.detail(item.id)}>详情</Button>
           </div>
@@ -165,7 +180,7 @@ class Map extends Component {
 
   render() {
     return (
-      <Layout style={{ height: window.innerHeight - conf.HEADER_HEIGHT - 80, overflow: 'hidden' }}>
+      <Layout style={{ minHeight: 500, height: window.innerHeight - conf.HEADER_HEIGHT - 80, overflow: 'hidden' }}>
         <Content style={{ height: "100%" }}>
           <div ref="map" style={{ height: "100%", width: '100%' }}></div>
         </Content>

@@ -46,8 +46,12 @@ class Analysis extends Component {
         option.title = { text: item.title };
         option.series = [];
 
+        if (item.header[0].color) {
+          option.color = item.header.map((item) => item.color);
+        }
+
         option.grid = {
-          top: '20%',
+          top: '120px',
           left: '3%',
           right: '4%',
           bottom: '3%',
@@ -70,6 +74,7 @@ class Analysis extends Component {
             name: item.title,
             type: 'pie',
             radius: '55%',
+            center: ['50%', '65%'],
             data: item.header.map(s => {return { name: s.title, value: item.rows[0][s.key] }})
           });
 
@@ -130,8 +135,9 @@ class Analysis extends Component {
   }
 
   createChart() {
+    //  height: this.refs.root.clientWidth / 2 * 0.7,
     return this.state.data.map((item, i) =>
-      <div className={this.state.toggle === i ? 'lz-full' : ''} key={i} style={{ height: this.refs.root.clientWidth / 2 * 0.7,  position: 'relative'}}>
+      <div className={this.state.toggle === i ? 'lz-full' : ''} key={i} style={{ position: 'relative'}}>
         <div ref={`map${i}`} style={{ width: '100%', height: '100%' }} />
         <span className="lz-tool">
           <Button size="large" onClick={() => this.full(i) }>全屏</Button>
@@ -143,6 +149,12 @@ class Analysis extends Component {
   componentDidMount() {
     cache = [];
     this.getData();
+
+    window.onresize = () => {
+      cache.forEach((item) => {
+        item.resize();
+      });
+    };
   }
 
   render() {

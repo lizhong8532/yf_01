@@ -8,6 +8,7 @@ import Analysis from './Analysis';
 import Detail from './Detail';
 import Attachment from './Attachment';
 import conf from '../config';
+import axios from 'axios';
 
 import {
   Route,
@@ -19,14 +20,16 @@ const { Header, Sider, Content } = Layout;
 
 
 class Home extends Component {
-  // constructor(props) {
-  //   super(props);
-  // }
+  constructor(props) {
+    super(props);
+    this.getList();
+  }
 
   state = {
     collapsed: false,
     mode: 'inline',
-    route: { label: '' }
+    route: { label: '' },
+    menus: []
   };
 
   onCollapse(collapsed) {
@@ -40,6 +43,29 @@ class Home extends Component {
     this.setState({
       route: item
     });
+  }
+
+  getList() {
+    // conf.SIDEBAR
+    axios.get('/api/getMenus')
+      .then((res) => {
+        const arr = [];
+        res.forEach((item) => {
+          arr.push({
+            label: item.title,
+            url: `/home/project/list/map/${item.type}`,
+            icon: item.icon ? item.icon : 'file',
+            filter: item.filter ? item.filter: ['year', 'status'],
+            type: item.type,
+            id: item.type
+          });
+        });
+
+        arr.forEach((item) => conf.URL_FILETER_MAPPING[item.type] = item.filter);
+        
+        conf.SIDEBAR.forEach((item) => arr.push(item));
+        this.setState({ menus: arr });
+      })
   }
 
   render() {
@@ -64,7 +90,7 @@ class Home extends Component {
             collapsed={this.state.collapsed}
             onCollapse={(collapsed) => this.onCollapse(collapsed)}
           >
-            <Sidebar items={conf.SIDEBAR}/>
+            <Sidebar items={ this.state.menus }/>
           </Sider>
           <Layout style={{ padding: '10px 24px 24px',  background: '#fff', overflow: 'hidden' }}>
             <Content>

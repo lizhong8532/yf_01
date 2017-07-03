@@ -6,6 +6,8 @@ import { Spin, Button, Icon } from 'antd';
 import PubSub from 'pubsub-js';
 import e from '../event';
 import Detail from './Detail';
+import conf from '../config';
+import common from './Common'
 
 import {
   Route,
@@ -35,24 +37,13 @@ class Project extends Component {
 
   constructor(props) {
     super(props);
+
     _this = this;
     _this.state = {
       loading: false,
-      currentYear: '',
-      currentStatus: '',
-      currentBatch: '',
       isShowDetail: false,
-      years: [],
-      batch: [],
       projectId: '',
-      status: [
-        { text: '红', color: 'red', count: 0 },
-        { text: '黄', color: 'yellow', count: 0 },
-        { text: '绿', color: 'green', count: 0 },
-        { text: '蓝', color: 'blue', count: 0 },
-        { text: '白', color: 'white', count: 0 }
-      ],
-      statusCount: 0,
+      filter: [],
       projects: {
         rows: [],
         header: []
@@ -63,34 +54,10 @@ class Project extends Component {
     isShowDetail = false;
   }
 
-  lightIcon = (status, size = '20px') => (
-    <div style={{
-      height: size,
-      width: size,
-      background: this.state.status[status].color,
-      boxShadow: '0 0 3px 3px #CCC',
-      borderRadius: '50%',
-      display: 'inline-block'
-    }} />
-  )
-
-  getIcon(status) {
-    switch (status) {
-      case 0:
-      case 1:
-      case 2:
-      case 3:
-      case 4:
-        return `/images/marker_${status}.png`;
-      default:
-        return '/images/marker_1.png';
-    }
-  }
-
   getCountByKey(arr, key) {
     let o = {};
     arr.forEach((item) => {
-      if (item[key]) {
+      if (item[key] !== undefined) {
         if (!o[item[key]]) {
           o[item[key]] = 0;
         }
@@ -98,80 +65,28 @@ class Project extends Component {
       }
     });
 
-    return Object.keys(o).sort((a, b) => a > b).map(k => {
+    return Object.keys(o).sort((a, b) => {
+      if (typeof a === 'number' && typeof b === 'number') {
+        return a > b;
+      } else if (conf.ORDER_MAPPING[a.substr(0, 2)] && conf.ORDER_MAPPING[b.substr(0, 2)]) {
+        return conf.ORDER_MAPPING[a.substr(0, 2)] > conf.ORDER_MAPPING[b.substr(0, 2)];
+      } else {
+        return 0;
+      }
+    }).map(k => {
       let obj = {};
-      obj[key] = k;
+      let label = k;
+      if (key === 'status') {
+        label = conf.LIGHT_MAPPING[k].text + '灯';
+      }
+
+      if (key === 'year') {
+        label = k + '年';
+      }
+      obj.label = label;
       obj.count = o[k];
+      obj.value = k;
       return obj;
-    });
-  }
-
-  listYears() {
-    return this.state.years.map((item) => 
-      <Button size="large" onClick={() => this.selectYear(item.year)} key={item.year} type={String(item.year) === this.state.currentYear ? 'primary' : ''}>{item.year}年({item.count})</Button>
-    );
-  }
-
-  listBatch() {
-    return this.state.batch.map((item) => 
-      <Button size="large" onClick={() => this.selectBatch(item.batch)} key={item.batch} type={item.batch === this.state.currentBatch ? 'primary' : ''}>{item.batch} ({item.count})</Button>
-    );
-  }
-
-  listStatus() {
-    // return this.state.status.map((item, status) => 
-    //   <Button onClick={() => this.selectStatus(status)} key={status} type={String(status) === String(this.state.currentStatus) ? 'primary' : ''}>
-    //     {item.text}灯({item.count})
-    //   </Button>
-    // );
-    
-
-    return this.state.status.map((item, status) => 
-      <span className="light-btn" onClick={() => this.selectStatus(status)} key={status} type={String(status) === String(this.state.currentStatus) ? 'primary' : ''}>
-        <img alt={`${item.text}灯`} src={this.getIcon(status)} /> {item.count}
-      </span>
-    );
-  }
-
-  selectBatch(batch) {
-    cacheRows = result.rows.filter(item => !batch || batch === item.batch);
-
-    this.state.status.forEach(item => item.count = 0);
-    cacheRows.forEach((item) => this.state.status[item.status].count++);
-
-    this.setState({
-      currentBatch: batch,
-      statusCount: cacheRows.length,
-      projects: {
-        header: result.header,
-        rows: cacheRows.filter(item => !(this.state.currentStatus + '') || String(this.state.currentStatus) === String(item.status))
-      }
-    });
-  }
-
-  selectYear(year) {
-    cacheRows = result.rows.filter(item => !year || year === String(item.year));
-
-    this.state.status.forEach(item => item.count = 0);
-    cacheRows.forEach((item) => this.state.status[item.status].count++);
-
-    this.setState({
-      currentYear: year,
-      statusCount: cacheRows.length,
-      projects: {
-        header: result.header,
-        rows: cacheRows.filter(item => !(this.state.currentStatus + '') || String(this.state.currentStatus) === String(item.status))
-      }
-    });
-  }
-
-  selectStatus(status) {
-    this.setState({
-      currentStatus: status,
-      projects: {
-        header: result.header,
-        rows: cacheRows.filter(item => !(status + '') || status + '' === String(item.status))
-      }
     });
   }
 
@@ -179,17 +94,11 @@ class Project extends Component {
     if (!this.state.loading) {
 
       this.setState({loading: true});
-      let params = {};
-      if (this.props.match.params.filter === 'attention') {
-        params.isAttention = true;
-      }
-
-      if (this.props.match.params.filter === 'batch') {
-        params.isBatch = true;        
-      } 
-
-      axios.get('/api/getProjects', {params: params})
+      axios.get('/api/getProjectsByType', {params: { type: this.props.match.params.filter }})
         .then((res) => {
+
+          // res = JSON.parse('{"data":{"header":[{"title":"项目名称","key":"name"},{"title":"年份","key":"year"},{"title":"是否关注项目","key":"isAttention"},{"title":"经度","key":"long"},{"title":"纬度","key":"lat"},{"title":"状态","key":"status"}],"rows":[{"name":"湿地公园1期","lat":39.5051985819905,"long":116.00620384386006,"id":1,"year":2014,"isAttention":true,"status":4,"batch":"第3批"},{"name":"湿地公园2期","lat":39.79525671242577,"long":116.7642149365932,"id":2,"year":2013,"isAttention":false,"status":1,"batch":"第4批"},{"name":"湿地公园3期","lat":39.185605626116654,"long":116.78426245155293,"id":3,"year":2014,"isAttention":true,"status":4,"batch":"第1批"},{"name":"湿地公园4期","lat":39.553465066272096,"long":116.0015054361252,"id":4,"year":2011,"isAttention":false,"status":3,"batch":"第3批"},{"name":"湿地公园5期","lat":39.62515581851251,"long":116.34739801088796,"id":5,"year":2012,"isAttention":true,"status":4,"batch":"第3批"},{"name":"湿地公园6期","lat":39.958120170669844,"long":116.80609294878944,"id":6,"year":2012,"isAttention":true,"status":3,"batch":"第5批"},{"name":"湿地公园7期","lat":39.760567841548756,"long":116.9526772253388,"id":7,"year":2015,"isAttention":true,"status":1,"batch":"第3批"},{"name":"湿地公园8期","lat":39.16047071829436,"long":116.6141686416381,"id":8,"year":2011,"isAttention":true,"status":2,"batch":"第5批"},{"name":"湿地公园9期","lat":39.62404799354974,"long":116.28808633645072,"id":9,"year":2013,"isAttention":false,"status":3,"batch":"第3批"},{"name":"湿地公园10期","lat":39.67532300257604,"long":116.18947177182946,"id":10,"year":2016,"isAttention":true,"status":1,"batch":"第2批"},{"name":"湿地公园11期","lat":39.45034283348394,"long":116.78156048516878,"id":11,"year":2016,"isAttention":true,"status":4,"batch":"第5批"},{"name":"湿地公园12期","lat":39.868588599876524,"long":116.87732517562497,"id":12,"year":2016,"isAttention":true,"status":4,"batch":"第5批"},{"name":"湿地公园13期","lat":39.6616792553373,"long":116.63343580931611,"id":13,"year":2012,"isAttention":true,"status":0,"batch":"第2批"},{"name":"湿地公园14期","lat":39.28614615856145,"long":116.51844297116587,"id":14,"year":2015,"isAttention":true,"status":0,"batch":"第3批"},{"name":"湿地公园15期","lat":39.69643113384955,"long":116.5075892600012,"id":15,"year":2016,"isAttention":true,"status":4,"batch":"第5批"},{"name":"湿地公园16期","lat":39.22669653162949,"long":116.74004866533431,"id":16,"year":2013,"isAttention":false,"status":1,"batch":"第1批"},{"name":"湿地公园17期","lat":39.26456147556382,"long":116.44422891205981,"id":17,"year":2012,"isAttention":true,"status":1,"batch":"第5批"},{"name":"湿地公园18期","lat":39.75786581110801,"long":116.63240632518553,"id":18,"year":2015,"isAttention":true,"status":2,"batch":"第5批"}]},"pass":true}');
+
           let header = res.data.header;
 
           header.push({
@@ -212,7 +121,7 @@ class Project extends Component {
 
           header.filter(item => item.key === 'status').forEach((item) => {
             item.render = (text) => {
-              return this.lightIcon(text);
+              return common.lightIcon(text);
             };
           });
 
@@ -225,25 +134,32 @@ class Project extends Component {
           res.data.rows.filter(item => !item.key).map((item) => item.key = item.id);
 
           result = res.data;
-          result.rows.forEach((item) => {
-            if (typeof this.state.status[item.status] === 'number') { 
-              this.state.status[item.status].count++;
-            }
-          });
+
           cacheRows = result.rows;
+
+          const type = this.props.match.params.filter;
+          let filter = conf.URL_FILETER_MAPPING[type].map((key) => {
+            const items = this.getCountByKey(result.rows, key);
+            items.unshift({
+              label: '全部',
+              count: cacheRows.length,
+              value: ''
+            });
+
+            return {
+              selected: '',
+              items: items,
+              key: key
+            };
+          });
 
           this.setState({
             projects: {
               header: header,
               rows: cacheRows
             },
-            currentYear: '',
-            currentStatus: '',
-            currentBatch: '',
-            statusCount: cacheRows.length,
-            loading: false,
-            years: this.getCountByKey(result.rows, 'year'),
-            batch: this.getCountByKey(result.rows, 'batch'),
+            filter: filter,
+            loading: false
           });
 
           if (typeof fn === 'function') {
@@ -263,36 +179,73 @@ class Project extends Component {
     this.getData();
   }
 
-  getHeader() {
-    if (this.props.match.params.filter === 'batch') {
-      return (
-        <ButtonGroup>
-          <Button size="large" onClick={() => this.selectBatch('')} type={this.state.currentBatch ? '' : 'primary'}>全部({ result.rows.length })</Button>
-          { this.listBatch() }
-        </ButtonGroup>
-      )
-    } else {
-      return (
-        <div>
-          <ButtonGroup>
-            <Button size="large" onClick={() => this.selectYear('')} type={this.state.currentYear ? '' : 'primary'}>全部({ result.rows.length })</Button>
-            { this.listYears() }
-          </ButtonGroup>
+  select(o, selectd) {
+    let pass = false;
+    let arr = cacheRows.map((item) => item);
+    o.selected = selectd;
 
-          <div className="light-btn-group" style={{ marginLeft: '10px' }}>
-            <Button size="large" onClick={() => this.selectStatus('')} type={this.state.currentStatus === '' ? 'primary' : ''}>全部({ this.state.statusCount })</Button>
-            { this.listStatus() }
+    this.state.filter.forEach((item) => {
+      if (item.key === o.key) {
+        pass = true;
+      } else if (pass) {
+        item.selected = '';
+      }
+
+      item.items.forEach((obj) => {
+        obj.count = arr.filter((i) => { 
+          return obj.value === '' || String(i[item.key]) === String(obj.value);
+        }).length;
+      });
+
+      arr = arr.filter((obj) => {
+        return item.selected === '' || String(obj[item.key]) === String(item.selected);
+      });
+    });
+
+    this.setState({
+      projects: {
+        header: result.header,
+        rows: arr
+      }
+    });
+  }
+  
+  listItem(o) {
+    return o.items.map((item, i) => {
+      if (o.key === 'status' && item.value !== '') {
+        return (
+          <span className="light-btn" onClick={() => this.select(o, item.value)} key={`${o.key}_${i}`} type={String(item.value) === String(o.selected) ? 'primary' : ''}>
+            <img alt={`${item.label}`} src={common.getIcon(item.value)} /> {item.count}
+          </span>
+        );
+      } else {
+        return (
+          <Button key={`${o.key}_${i}`} size="large" onClick={() => this.select(o, item.value)} type={o.selected === item.value ? 'primary' : ''}>{ `${item.label}(${item.count})` }</Button>
+        );
+      }
+    });
+  }
+
+  getHeader() {
+    return this.state.filter.map((item) => {
+      if (item.key === 'status') {
+        return (
+          <div className="light-btn-group" style={{ marginRight: '10px' }} key={item.key}>
+            { this.listItem(item) }
           </div>
-        </div>
-      );
-    }
+        );
+      } else {
+        return (
+          <ButtonGroup key={item.key} style={{ marginRight: '10px' }}>
+            { this.listItem(item) }
+          </ButtonGroup>
+        );
+      }
+    });
   }
 
   openDetail(id) {
-    // this.setState({
-    //   projectId: id,
-    //   isShowDetail: true
-    // });
+
     projectId = id;
     isShowDetail = true;
 
@@ -305,10 +258,6 @@ class Project extends Component {
 
   closeDetail() {
     isShowDetail = false;
-    // this.setState({
-    //   isShowDetail: false
-    // });
-
     this.refs.main.style.top = 0;
     this.refs.main.style.position = 'static';
     this.refs.detail.style.top = 999999 + 'px';

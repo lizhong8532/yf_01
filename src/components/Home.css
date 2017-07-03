@@ -89,3 +89,30 @@
   bottom: 52px !important;
   right: 30px !important;
 }
+.BMap_cpyCtrl,
+.anchorBL {
+  display: none !important;
+}
+.lz-blink {
+  animation: blinker 1s linear infinite;
+}
+@-moz-keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+@-webkit-keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+@-o-keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
