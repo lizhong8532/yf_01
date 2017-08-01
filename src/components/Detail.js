@@ -176,21 +176,22 @@ class Detail extends Component {
       }],
       yAxis: [{
         type: 'value',
-        max: this.state.invest.rows[0].annualPlan * 1.2
+        max: common.getMax(this.state.invest.rows)
       }],
       series: []
     };
 
     this.state.invest.header.forEach((item) => {
-      item.type = item.key === 'annualPlan' ? 'line' : 'bar';
+      item.type = item.key === 'annualPlan'|| item.key === 'annualTotal' ? 'line' : 'bar';
     });
 
     let series = this.state.invest.header;
 
     series.forEach((item) => {
-      option.legend.data.push(item.title);
+      var title = item.tips ? item.tips : item.title;
+      option.legend.data.push(title);
       option.series.push({
-        name: item.title,
+        name: title,
         type: item.type,
         data: []
       });

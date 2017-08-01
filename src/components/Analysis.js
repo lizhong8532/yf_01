@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import { Spin, Button } from 'antd';
 import axios from 'axios';
+import common from './Common';
 
 import './Analysis.css';
 
@@ -40,6 +41,8 @@ class Analysis extends Component {
 
   initCharts() {
       this.state.data.forEach((item, i) => {
+        item.header.forEach(item => item.title = item.tips ? item.tips : item.title);
+
         let myChart = echarts.init(this.refs[`map${i}`]);
 
         let option = {};
@@ -85,7 +88,7 @@ class Analysis extends Component {
             option.series.push({
               key: item.key,
               name: item.title,
-              type: item.key === 'annualPlan' ? 'line' : 'bar',
+              type: item.key === 'annualPlan' || item.key === 'annualTotal' ? 'line' : 'bar',
               data: []
             });
           });
@@ -102,7 +105,7 @@ class Analysis extends Component {
           }];
 
           if (item.rows[0].annualPlan) {
-            option.yAxis[0].max = item.rows[0].annualPlan * 1.2;
+            option.yAxis[0].max = common.getMax(item.rows);
           }
 
           option.xAxis = [{
@@ -130,7 +133,7 @@ class Analysis extends Component {
     this.setState({ toggle: i === this.state.toggle ? '' : i });
   
     setTimeout(() => {
-      cache[i].resize();      
+      cache[i].resize();
     }, 200);
   }
 

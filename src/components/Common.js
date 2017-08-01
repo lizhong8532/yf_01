@@ -35,6 +35,18 @@ const common = {
         display: conf.LIGHT_MAPPING[status] ? 'inline-block' : 'none'
       }} />
     )
+  },
+
+  getMax(arr) {
+    let max = 0;
+
+    arr.forEach(item => {
+      Object.keys(item).forEach((key) => {
+        max = Math.max(max, item[key]);
+      });
+    });
+
+    return max * 1.2;
   }
 };
 
