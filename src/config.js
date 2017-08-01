@@ -27,11 +27,11 @@ const MAP_LABEL_STYLE = {
 const URL_FILETER_MAPPING = {}
 
 const LIGHT_MAPPING = [
-  { text: '红', color: 'red', count: 0 },
-  { text: '黄', color: 'yellow', count: 0 },
-  { text: '绿', color: 'green', count: 0 },
-  { text: '蓝', color: 'blue', count: 0 },
-  { text: '白', color: 'white', count: 0 },
+  { text: '延期', color: 'red', count: 0 },
+  { text: '预警', color: 'yellow', count: 0 },
+  { text: '正常', color: 'green', count: 0 },
+  { text: '延期完成', color: 'blue', count: 0 },
+  { text: '未到期', color: 'white', count: 0 },
   { text: '红闪', color: 'red', count: 0 },
   { text: '绿闪', color: 'green', count: 0 }
 ];

@@ -77,7 +77,7 @@ class Project extends Component {
       let obj = {};
       let label = k;
       if (key === 'status') {
-        label = conf.LIGHT_MAPPING[k].text + '灯';
+        label = conf.LIGHT_MAPPING[k].text;
       }
 
       if (key === 'year') {
@@ -215,7 +215,7 @@ class Project extends Component {
       if (o.key === 'status' && item.value !== '') {
         return (
           <span className="light-btn" onClick={() => this.select(o, item.value)} key={`${o.key}_${i}`} type={String(item.value) === String(o.selected) ? 'primary' : ''}>
-            <img alt={`${item.label}`} src={common.getIcon(item.value)} /> {item.count}
+            <img title={`${item.label}`} alt={`${item.label}`} src={common.getIcon(item.value)} /> {item.count}
           </span>
         );
       } else {

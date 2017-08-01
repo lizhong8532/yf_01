@@ -182,7 +182,7 @@ class Detail extends Component {
     };
 
     this.state.invest.header.forEach((item) => {
-      item.type = item.key === 'annualPlan' ? 'line' : 'bar';
+      item.type = item.key === 'annualPlan' || item.key === 'annualTotal' ? 'line' : 'bar';
     });
 
     let series = this.state.invest.header;

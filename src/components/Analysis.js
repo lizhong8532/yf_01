@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import { Spin, Button } from 'antd';
 import axios from 'axios';
+import common from './Common';
 
 import './Analysis.css';
 
@@ -40,6 +41,10 @@ class Analysis extends Component {
 
   initCharts() {
       this.state.data.forEach((item, i) => {
+        item.header.forEach(item => item.title = item.tips ? item.tips : item.title);
+        let headerMapping = {};
+        item.header.forEach(item => headerMapping[item.title] = item.key);
+        
         let myChart = echarts.init(this.refs[`map${i}`]);
 
         let option = {};
@@ -67,7 +72,21 @@ class Analysis extends Component {
         if (item.rows.length === 1) {
           option.tooltip = {
             trigger: 'item',
-            formatter: '{a} <br/>{b} : {c} ({d}%)'
+            formatter: (params, ticket) => {
+              var key = headerMapping[params.name];
+
+              var arr = [
+                params.seriesName,
+                params.name + ' : ' + params.data.value + ' ( ' + params.percent + '% )'
+              ];
+
+              if (Array.isArray(item.rows[0][key + '_tips'])) {
+                arr.push('===详情====');
+                arr = arr.concat(item.rows[0][key + '_tips']);
+              }
+
+              return arr.join('<br />');
+            }
           };
 
           option.series.push({
@@ -85,7 +104,7 @@ class Analysis extends Component {
             option.series.push({
               key: item.key,
               name: item.title,
-              type: item.key === 'annualPlan' ? 'line' : 'bar',
+              type: item.key === 'annualPlan' || item.key === 'annualTotal' ? 'line' : 'bar',
               data: []
             });
           });
@@ -102,7 +121,7 @@ class Analysis extends Component {
           }];
 
           if (item.rows[0].annualPlan) {
-            option.yAxis[0].max = item.rows[0].annualPlan * 1.2;
+            option.yAxis[0].max = common.getMax(item.rows);
           }
 
           option.xAxis = [{
@@ -130,7 +149,7 @@ class Analysis extends Component {
     this.setState({ toggle: i === this.state.toggle ? '' : i });
   
     setTimeout(() => {
-      cache[i].resize();      
+      cache[i].resize();
     }, 200);
   }
 
